@@ -1,0 +1,22 @@
+{
+  "env": {
+    "node": true,
+    "es6": true
+  },
+  "extends": ["eslint:recommended"],
+  "rules": {
+    "no-unsafe-regex": "error",
+    "no-useless-escape": "error",
+    "no-eval": "error",
+    "no-new-func": "error",
+    "no-implied-eval": "error",
+    "no-restricted-properties": [
+      "error",
+      {
+        "object": "arguments",
+        "property": "callee",
+        "message": "arguments.callee is deprecated"
+      }
+    ]
+  }
+}
