@@ -3,7 +3,7 @@ import { useState, ChangeEvent, FormEvent } from 'react';
 import axios from 'axios';
 import { useMutation } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft } from 'lucide-react';
+import { Check, ChevronLeft, ChevronsUpDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -12,27 +12,114 @@ import { Textarea } from '@/components/ui/textarea';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import Image from 'next/image';
 import { toast } from 'sonner';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { cn } from '@/lib/utils';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useAtom } from 'jotai';
+import { RoleAtom, tokenAtom } from '@/context/Atom';
 
 interface FormData {
   nome: string;
   descricao: string;
   nota: number;
   fotos: string; 
+  latitude: string
+  longitude: string
+  categoria: string
+  telefone?: string
+  regiao?: string
 }
+const categorias = [
+  {
+    value: "Cidade",
+    label: "Cidade",
+  },
+  {
+    value: "Parque",
+    label: "Parque",
+  },
+  {
+    value: "Restaurante",
+    label: "Restaurante",
+  },
+  {
+    value: "Praia",
+    label: "Praia",
+  },
+  {
+    value: "Monumento",
+    label: "Monumento",
+  },
+  {
+    value: "Ilha",
+    label: "Ilha",
+  },
+  {
+    value: "Parque de Diversão",
+    label: "Parque de Diversão",
+  },
+  {
+    value: "Vinícola",
+    label: "Vinícola",
+  },
+  {
+    value: "Natureza",
+    label: "Natureza",
+  },
+  {
+    value: "Museu",
+    label: "Museu",
+  },
+  {
+    value: "Religioso",
+    label: "Religioso",
+  },
+]
 
 export default function CriarPonto() {
+
+  const [open, setOpen] = useState(false)
+  const [value, setValue] = useState("")
+  const [regiao, setRegiao] = useState("")
+
   const [formData, setFormData] = useState<FormData>({
     nome: '',
     descricao: '',
-    nota: 0,
+    nota: 5,
     fotos: '', 
+    latitude: '',
+    longitude: '',
+    categoria: value,
+    telefone: '',
+    regiao: regiao,
   });
+
+  const handleRegiaoChange = (value: string) => {
+    setRegiao(value);
+    setFormData(prevState => ({
+      ...prevState,
+      regiao: value,
+    }));
+  };
+
+  const handleCategorySelect = (currentValue: string) => {
+    setValue(currentValue);
+    setFormData(prevState => ({
+      ...prevState,
+      categoria: currentValue,
+    }));
+    setOpen(false);
+  };
+  
+  const [token, setToken] = useAtom(tokenAtom);
 
   const mutation = useMutation({
     mutationFn: (data: FormData) => {
       return axios.post('http://localhost:8080/brazu/pontos', data, {
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
       });
     },
@@ -70,11 +157,15 @@ export default function CriarPonto() {
         setFormData({ ...formData, fotos: '' });
         setFormData({ ...formData, nome: '' });
         setFormData({ ...formData, descricao: '' });
-        setFormData({ ...formData, nota: 0 });
+        setFormData({ ...formData, nota: 5 });
+        setFormData({ ...formData, longitude: '' });
+        setFormData({ ...formData, latitude: '' });
+        setFormData({ ...formData, categoria: value });
+        setFormData({ ...formData, telefone: '' });
+        setFormData({ ...formData, regiao: regiao });
     }
-
   return (
-    <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 bg-muted/40 pt-10">
+    <main className="grid flex-1 ml-[100px] items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 bg-muted/40 pt-10 h-[90vh]">
       <div className="mx-auto grid  flex-1 auto-rows-max gap-4">
         <div className="flex items-center gap-4">
             <Button variant="outline" size="icon" className="h-9 w-9" onClick={handleBack}>
@@ -96,13 +187,13 @@ export default function CriarPonto() {
                   <div className="grid gap-6 grid-cols-2">
                       <div className="grid gap-3">
                       <div className="grid gap-3">
-                      <Label htmlFor="nome">Nome</Label>
+                      <Label
+                       htmlFor="nome">Nome</Label>
                       <Input
                           id="nome"
                           type="text"
                           name="nome"
                           className="w-full"
-                          defaultValue=""
                           value={formData.nome}
                           onChange={handleChange}
                           required
@@ -115,7 +206,6 @@ export default function CriarPonto() {
                       <Label htmlFor="descricao">Descrição</Label>
                       <Textarea
                           id="descricao"
-                          defaultValue=""
                           className="min-h-32 pt-2"
                           name="descricao"
                           value={formData.descricao}
@@ -126,48 +216,12 @@ export default function CriarPonto() {
                           title='A descrição deve ter entre 10 e 500 caracteres'
                       />
                       </div>
-                  </div>
-                  <div className="flex flex-col gap-7">
-                  <div>
-                      <Label htmlFor="description">Nota:</Label>
-                      <ToggleGroup type="single">
-                          <ToggleGroupItem onClick={() => setFormData({ ...formData, nota: 1 })} value="1" aria-label="Toggle bold">
-                              1
-                          </ToggleGroupItem>
-                          <ToggleGroupItem onClick={() => setFormData({ ...formData, nota: 2 })} value="2" aria-label="Toggle bold">
-                              2
-                          </ToggleGroupItem>
-                          <ToggleGroupItem onClick={() => setFormData({ ...formData, nota: 3 })} value="3" aria-label="Toggle bold">
-                              3
-                          </ToggleGroupItem>
-                          <ToggleGroupItem  onClick={() => setFormData({ ...formData, nota: 4 })} value="4" aria-label="Toggle bold">
-                              4
-                          </ToggleGroupItem>
-                          <ToggleGroupItem onClick={() => setFormData({ ...formData, nota: 5 })} value="5" aria-label="Toggle bold">
-                              5
-                          </ToggleGroupItem>
-                      </ToggleGroup>
-                  </div>
-                  <div className="grid gap-3">
-                      <Label htmlFor="Cep">Cep</Label>
-                      <Input
-                          id="cep"
-                          name="cep"
-                          type="text"
-                          className="w-full"
-                          defaultValue=""
-                          pattern="^\d{5}-\d{3}$"
-                          title="Digite um CEP válido (ex: 12345-678)"
-                      />
-                  </div>
-                  </div>
-                  <div className="grid gap-3">
+                      <div className="grid gap-3">
                       <Label htmlFor="imageUrl">URL da Imagem</Label>
                       <Input
                           id="imageUrl"
                           type="text"
                           className="w-full"
-                          defaultValue="Gamer Gear Pro Controller"
                           onBlur={handleImageChange}
                           name="fotos"
                           value={formData.fotos}
@@ -179,7 +233,116 @@ export default function CriarPonto() {
                       />
                   </div>
                   </div>
+                  <div className="flex flex-col gap-7">
+                  <div className="grid gap-3">
+                    <div className='flex gap-3'>
+                      <div>
+                      <Label htmlFor="latitude">Latitude</Label>
+                      <Input
+                          id="latitude"
+                          name="latitude"
+                          value={formData.latitude}
+                          onChange={handleChange}
+                          type="text"
+                          className="w-full"
+                          title="Digite uma latitude"
+                      />                  
+                  </div>
+                  <div>
+                      <Label htmlFor="longitude">Longitude</Label>
+                      <Input
+                          id="longitude"
+                          name="longitude"
+                          value={formData.longitude}
+                          onChange={handleChange}
+                          type="text"
+                          className="w-full"
+                          title="Digite a logintude"
+                      />                  
+                  </div>
+                      </div>
+                  </div>
+                  <div className="grid gap-3">
+                    <div className='flex gap-3'>
+                      <div className='flex justify-end flex-col gap-1'>
+                      <Label htmlFor="categoria">Categoria</Label>
+                      <Popover open={open} onOpenChange={setOpen}>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={open}
+                              className="w-[200px] justify-between"
+                            >
+                              {value
+                                ? categorias.find((framework) => framework.value === value)?.label
+                                : "selecione.."}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[200px] p-0">
+                            <Command>
+                              <CommandInput placeholder="selecione uma categoria..." />
+                              <CommandList>
+                                <CommandEmpty>Nenhuma categoria encontrada.</CommandEmpty>
+                                <CommandGroup>
+                                  {categorias.map((framework) => (
+                                    <CommandItem
+                                      key={framework.value}
+                                      value={framework.value}
+                                      onSelect={(currentValue) => {
+                                        handleCategorySelect(currentValue)
+                                        setOpen(false)
+                                      }}
+
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          value === framework.value ? "opacity-100" : "opacity-0"
+                                        )}
+                                      />
+                                      {framework.label}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>        
+                  </div>
+                  <div className='w-full'>
+                  <Label htmlFor="regiao">Região</Label>
+                    <Select  onValueChange={value => handleRegiaoChange(value)} >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione..."   />
+                        </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="sul">sul</SelectItem>
+                        <SelectItem value="sudeste">sudeste</SelectItem>
+                        <SelectItem value="centro-oeste" >centro-oeste</SelectItem>
+                        <SelectItem value="norte">norte</SelectItem>
+                        <SelectItem value="nordeste">nordeste</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                      </div>
+                  </div>
+                  <div className="grid gap-3">
+                      <Label htmlFor="telefone">Telefone</Label>
+                      <Input
+                          id="telefone"
+                          name="telefone"
+                          value={formData.telefone}
+                          onChange={handleChange}
+                          type="text"
+                          className="w-full"
+                          title="Digite um telefone válido (ex: 12345-678)"
+                      />
+                  </div>
                   <Button type="submit" className=' bg-blue-800 hover:bg-blue-700 h-8 mr-5 my-5'>Enviar</Button>
+                  </div>
+                  </div>
                 </form>
                 </CardContent>
             </Card>

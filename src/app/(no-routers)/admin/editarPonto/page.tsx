@@ -3,11 +3,10 @@ import {  getPontoInterreseById } from "@/utils/api-request";
 import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query";
 
 
-export default async function Editar({ id = 0 }: {  id?: number }) {
+export default async function Editar({ id = 0, token = "" }: {  id?: number, token?: string }) {
   const queryClient = new QueryClient();
-
+  
   if (id !== 0) {
-    console.log('id', id)
     await queryClient.prefetchQuery({
       queryKey: ['pontosById', id], 
       queryFn: () => getPontoInterreseById(id),
@@ -16,7 +15,7 @@ export default async function Editar({ id = 0 }: {  id?: number }) {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <EditarPonto id={id} />
+      <EditarPonto id={id} token={token} />
     </HydrationBoundary>
   );
 }

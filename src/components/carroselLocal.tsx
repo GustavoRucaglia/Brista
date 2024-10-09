@@ -11,26 +11,19 @@ import {
 } from "@/components/ui/carousel"
 import Image from "next/image"
 
-export function CarouselLocal() {
+export function CarouselLocal({url}: {url: string} ) {
   return (
-    <Carousel  plugins={[
-        Autoplay({
-          delay: 2000,
-        }),
-      ]} className="w-full mb-20">
-      <CarouselContent>
-        {Array.from({ length: 1 }).map((_, index) => (
-          <CarouselItem key={index}>
-            <div className="p-1">
-              <Card>
-                <CardContent className="flex h-[500px] w-[1200px] rounded-md">
-                    <Image  src="/carroselPraia.jpg"  width='1200' height='400' alt='logo' className="rounded-md" />
+            <div className="rounded-md mb-20">
+              <Card className="p-0">
+                <CardContent className="flex h-[470px] max-w-[1200px] p-0  rounded-md">
+                    <div  style={{
+                    backgroundImage: `url(${url})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                  }}
+                   className="rounded-md w-[1200px] h-[500px]"  />
                 </CardContent>
               </Card>
             </div>
-          </CarouselItem>
-        ))}
-      </CarouselContent>
-    </Carousel>
   )
 }

@@ -2,27 +2,34 @@ import ListaPontos from "@/components/listPonts";
 import { getPontoInterrese, getPontoInterreseById } from "@/utils/api-request";
 import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query";
 
-export default async function Admin({ sortBy = "id", id = 0 }: { sortBy?: string; id?: number }) {
+export default async function Login({ sortBy = "id", id = 0, token = "" }: { sortBy?: string; id?: number; token?: string }) {
   const queryClient = new QueryClient();
 
-  // Remove as consultas antigas
-  await queryClient.removeQueries({
-    queryKey: ["pontos", sortBy],
+  // Invalidate and remove queries to ensure data is fresh
+  await queryClient.invalidateQueries({
+    queryKey: ["pontosTuristico", sortBy],
   });
 
-  // Pré-carrega a consulta de pontos
+  // Prefetch queries with the latest data
   await queryClient.prefetchQuery({
-    queryKey: ["pontos", sortBy],
+    queryKey: ["pontosTuristico", sortBy],
     queryFn: () => getPontoInterrese(sortBy),
   });
 
-  // Pré-carrega a consulta de ponto por ID
   if (id !== 0) {
     await queryClient.prefetchQuery({
       queryKey: ["pontosById", id],
       queryFn: () => getPontoInterreseById(id),
     });
   }
+
+  // Optionally, remove any stale or obsolete queries
+  await queryClient.removeQueries({
+    predicate: (query) => {
+      const [key] = query.queryKey;
+      return key === "pontosTuristicos" && query.queryKey[1] !== sortBy;
+    },
+  });
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>

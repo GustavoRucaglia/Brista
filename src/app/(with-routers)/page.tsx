@@ -1,18 +1,37 @@
-import { CarouselDestinos } from "@/components/carrosel-destinos";
-import { CarouselHome } from "@/components/carrosel-home";
+import { HomeInitial } from "@/components/home/home";
+import ListaPontos from "@/components/listPonts";
+import { getPontoInterrese, getPontoInterreseById, getPontoInterreseFilter } from "@/utils/api-request";
+import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query";
 
-export default function Home() {
+export default async function Home({ sortBy = "id", id = 0, category = "" }: { sortBy?: string; id?: number; category?: string }) {
+  const queryClient = new QueryClient();
+
+  // Invalidate queries to ensure they are refetched with the latest data
+  await queryClient.invalidateQueries({
+    queryKey: ["pontos", sortBy],
+  });
+
+  // Prefetch queries with the latest data
+  await queryClient.prefetchQuery({
+    queryKey: ["pontos", category],
+    queryFn: () => getPontoInterreseFilter(category),
+  });
+
+  if (id !== 0) {
+    await queryClient.prefetchQuery({
+      queryKey: ["pontosById", id],
+      queryFn: () => getPontoInterreseById(id),
+    });
+  }
+
+  // Ensure no stale or unnecessary queries are lingering
+  queryClient.removeQueries({
+    predicate: (query) => query.queryKey[0] === "pontos" && query.queryKey[1] !== sortBy,
+  });
+
   return (
-    <main className="w-full flex flex-col items-center justify-center">
-      <section className="max-w-[1200px]">
-        <CarouselHome />
-        <br />
-        <CarouselDestinos title="Conheça lugares incriveis" subTitle="Os favoritos dos turistas!" />
-        <CarouselDestinos title="conheça restaurante por todo Brasil" subTitle="procure apartir de regiões" />
-        <CarouselDestinos title="Sonhe com sua proxima viagem" subTitle="conheça lugares que parecem surreails" />
-        <CarouselDestinos title="Procure pontos turisticos por regioes" subTitle="conheça a fauna e flora do Brasil" />
-        <CarouselDestinos title="Viaje por todo Brasil" subTitle="conheça as maravilhas do desse pais" />
-      </section>
-    </main>
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <HomeInitial />
+    </HydrationBoundary>
   );
 }

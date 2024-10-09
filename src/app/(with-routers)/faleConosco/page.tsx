@@ -1,7 +1,7 @@
 import SlideFilterBy from "@/components/FilterBy";
 import { Carrosel } from "@/components/carrosel";
 
-const Restaurants = () => {
+const FaleConosco = () => {
   return (
     <main className='w-full flex justify-center items-center flex-col h-[80vh]'>
     <h1 className="mb-8 text-3xl font-bold text-center">FALE CONOSCO</h1>
@@ -31,4 +31,4 @@ const Restaurants = () => {
   )
 }
 
-export default Restaurants
+export default FaleConosco

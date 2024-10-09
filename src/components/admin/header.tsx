@@ -25,11 +25,14 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
+import { usePathname } from 'next/navigation';
 
 const Header = () => {
   const directionHome = () => {
     window.location.href = "/"
   }
+
+  const pathname = usePathname()
 
   return (
     <div className='flex w-full flex-col bg-muted/40'>
@@ -44,34 +47,27 @@ const Header = () => {
           </Link>
               <Link
                 href="#"
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-              >
-                <Home className="h-5 w-5" />
-                <span className="sr-only">Dashboard</span>
-              </Link>
-              <Link
-                href="#"
                 className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground   transition-colors hover:text-foreground md:h-8 md:w-8"
               >
                 <MessageSquareText className="h-5 w-5" />
                 <span className="sr-only">Comentários</span>
               </Link>
               <Link
-                href="#"
-                className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                href="/admin"
+                className={`flex h-9 w-9 items-center justify-center rounded-lg ${pathname === '/admin' ? 'text-accent-foreground  bg-accent' : 'text-muted-foreground ' } transition-colors hover:text-foreground md:h-8 md:w-8`}
               >
                 <MapPinned className="h-5 w-5" />
                 <span className="sr-only">Pontos de interrese</span>
               </Link>
               <Link
-                href="#"
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                href="/admin/usuarios"
+                className={`flex h-9 w-9 items-center justify-center rounded-lg  ${pathname === '/admin/usuarios' ? 'text-accent-foreground bg-accent' : 'text-muted-foreground ' } transition-colors hover:text-foreground md:h-8 md:w-8`}
               >
                 <Users2 className="h-5 w-5" />
                 <span className="sr-only">Usuários</span>
               </Link>
               <Link
-                href="#"
+                href="/admin/dashboard"
                 className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
               >
                 <LineChart className="h-5 w-5" />
@@ -80,7 +76,7 @@ const Header = () => {
         </nav>
       </aside>
       <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14 md:hidden"></div>
-      <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:pl-32 sm:pr-10 sm:pt-5">
+      <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-muted/40 px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:pl-32 sm:pr-10 sm:pt-5">
           <Sheet>
             <SheetTrigger asChild>
               <Button size="icon" variant="outline" className="sm:hidden">
